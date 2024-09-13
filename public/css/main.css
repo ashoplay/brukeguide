@@ -18,7 +18,6 @@ nav a {
 }
 
 #myInput {
-    background-image: url('/css/searchicon.png'); /* Add a search icon to input */
     background-position: 10px 12px;
     background-repeat: no-repeat;
     width: 100%; /* Full-width */
