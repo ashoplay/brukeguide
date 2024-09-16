@@ -69,11 +69,29 @@ nav a {
     ;
     min-height: 800px;
 }
-.maincontainer {
-    grid-area: main;
-}
 .aside {
     grid-area: aside;
     display: flex;
     flex-direction: column;
+    list-style-type: none;
+    background-color: bisque;
+    font-size: large;
+    position: fixed; 
+    height: 100%;
+    width: 20%; 
+    padding: 20px;
+}
+
+.maincontainer {
+    grid-area: main;
+    margin-left: 5%; 
+}
+.aside li {
+    margin-bottom: 20px;
+}
+.aside a {
+    margin-bottom: 20px;
+}
+p {
+    padding-bottom: 5%;
 }
