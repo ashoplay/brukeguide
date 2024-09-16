@@ -20,7 +20,7 @@ nav a {
 #myInput {
     background-position: 10px 12px;
     background-repeat: no-repeat;
-    width: 100%; /* Full-width */
+    width: 100%;
     font-size: 16px;
     padding: 12px 20px 12px 40px;
     border: 1px solid #ddd;
@@ -47,25 +47,11 @@ nav a {
 #myUL li a:hover:not(.header) {
     background-color: #eee;
 }
-
-/* li {
-    padding-left: 50px;
-    padding-right: 50px;
-    font-size: xx-large;
-} */
- /* ul {
-    display: flex;
-    justify-content: space-evenly;
-    padding-top: 2%;
-    padding-bottom: 2%;
-    flex-wrap: wrap;
-    list-style-type: none;
-} */
 .gridcontainer {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(7, 1fr);
     grid-template-areas: 
-    "aside main main main main"
+    "aside aside main main main main main"
     ;
     min-height: 800px;
 }
@@ -75,7 +61,6 @@ nav a {
     flex-direction: column;
     list-style-type: none;
     background-color: bisque;
-    font-size: large;
     position: fixed; 
     height: 100%;
     width: 20%; 
@@ -85,13 +70,33 @@ nav a {
 .maincontainer {
     grid-area: main;
     margin-left: 5%; 
+    padding-right: 5%;
 }
-.aside li {
-    margin-bottom: 20px;
+.aside li{
+    padding-bottom: 15px;
+    font-size: 23px;
 }
 .aside a {
     margin-bottom: 20px;
+    font-size: 25px;
+    text-decoration: none;
 }
 p {
     padding-bottom: 5%;
+}
+@media (max-width: 768px) {
+    .aside li a{
+        font-size: 19px;
+    }
+    .aside a {
+        font-size: 21px;
+    }
+}
+@media (max-width: 480px) {
+    .aside li a{
+        font-size: 16px;
+    }
+    .aside a {
+        font-size: 18px;
+    }
 }
