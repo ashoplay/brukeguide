@@ -61,3 +61,19 @@ nav a {
     flex-wrap: wrap;
     list-style-type: none;
 } */
+.gridcontainer {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-areas: 
+    "aside main main main main"
+    ;
+    min-height: 800px;
+}
+.maincontainer {
+    grid-area: main;
+}
+.aside {
+    grid-area: aside;
+    display: flex;
+    flex-direction: column;
+}

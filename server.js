@@ -20,6 +20,9 @@ app.get("/guide", (req, res) => {
 app.get("/dashboard", (req, res) => {
   res.render("dashboard");
 });
+app.get("/signinn", (req, res) => {
+  res.render("signinn")
+});
 
 
 const PORT = process.env.PORT || 3000;
