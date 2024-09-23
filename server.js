@@ -5,9 +5,28 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt")
 const multer = require('multer');
 const path = require('path');
+const { brotliDecompress } = require("zlib");
 
 const Schema = mongoose.Schema
-const uploads = multer({dest: "uploads/"})
+// const uploads = multer({dest: "uploads/"})
+const diskstorage = multer.diskStorage({
+  destination: function(req, file, cb){
+    cb(null, "/uploads")
+  },
+  filename: function(req, file, cb){
+  
+    const ext = path.extname(file.originalname);
+  console.log("EXT", ext)
+  if(ext !== ".png"|| ext !== ".jpg"){
+    return cb(new Error("only png and jpg files"))
+  }
+  const filename = file.originalname + ".png"
+
+  cb(null, filename)
+}})
+const uploads = multer ({
+  storage: diskstorage,
+})
 
 require("dotenv").config();
 app.set("view engine", "ejs");
@@ -20,7 +39,13 @@ const userSchema = new Schema({
   email: String,
   password: String
 })
-
+const guideschema = new Schema({
+  title: String,
+  tag: String,
+  overskrift: array,
+  beskrivelse: array,
+  bilde: array,
+})
 const User = mongoose.model("User", userSchema);
 
 app.get("/", (req, res) => {
@@ -37,7 +62,7 @@ app.post("/login", (req, res) => {
 app.get("/newguide", (req, res) => {
   res.render("newguide");
 });
-app.post("/newguide", uploads.single(), (req, res) => {
+app.post("/newguide", uploads.array("bilde"), (req, res) => {
   console.log(req.body, "body")
   console.log(req.file, "file")
 });
@@ -89,7 +114,7 @@ app.get('/', (req, res) => {
 });
 
 app.post('/upload', upload.single('image'), (req, res) => {
-  if (!req.file) {
+  if (!req.files) {
     return res.status(400).send('No file uploaded.');
   }
   res.send(`Image uploaded: ${req.file.filename}`);
