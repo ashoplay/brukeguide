@@ -16,14 +16,14 @@
     <h1>ny guide</h1>
     <input title type="title">
     <input tag type="tag">
-    <form action="">
+    <form action="" method="post" id="formcontainer" enctype="multipart/form-data">
         <div id="addnewsection">
             <h2>seksjon</h2>
             <div name = "section">
                 <input name = "overskrift" overskrift type="text">
                 <input name = "beskrivelse" beskrivelse type="text">
                 <form action="/upload" method="POST" enctype="multipart/form-data">
-                    <input type="file" name="image" accept="img/*"/>
+                    <input type="file" name="bilde" accept="img/*"/>
                     <button type="submit">Upload</button>
                 </form>
             </div>

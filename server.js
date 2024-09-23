@@ -7,6 +7,7 @@ const multer = require('multer');
 const path = require('path');
 
 const Schema = mongoose.Schema
+const uploads = multer({dest: "uploads/"})
 
 require("dotenv").config();
 app.set("view engine", "ejs");
@@ -36,8 +37,9 @@ app.post("/login", (req, res) => {
 app.get("/newguide", (req, res) => {
   res.render("newguide");
 });
-app.post("/newguide", (req, res) => {
-  console.log(req.body)
+app.post("/newguide", uploads.single(), (req, res) => {
+  console.log(req.body, "body")
+  console.log(req.file, "file")
 });
 
 app.get("/guide", (req, res) => {
