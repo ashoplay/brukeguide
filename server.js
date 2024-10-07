@@ -15,6 +15,29 @@ app.use(express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
+const diskStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+      cb(null, "./uploads")
+  },
+  filename: function (req, file, cb) {
+      console.log(file);
+      const ext = path.extname(file.originalname);
+      console.log("EXT", ext);
+      // if(ext !== ".png" || ext !== ".jpg") {
+      //     return cb(new Error("Only PNG FILES allowed, stay away Martin!"))
+      // } 
+      const fileName = file.originalname + ".png"
+      cb(null, fileName)
+  }
+
+})
+const uploads = multer({
+  storage: diskStorage,
+
+})
+
+
 // Connect to MongoDB database
 mongoose.connect("mongodb://127.0.0.1:27017/brukerguide", {
     useNewUrlParser: true,
@@ -57,6 +80,8 @@ app.get("/login", (req, res) => {
 // Routing for the guide page
 app.get("/guide", async (req, res) => {
     const guides = await Guide.find(); // Fetch all guides from the database
+
+    console.log(guides)
     res.render("guide", { guides });
 });
 
@@ -87,8 +112,10 @@ app.get("/newguide", (req, res) => {
 });
 
 // Handle form submission for new guide
-app.post("/newguide", async (req, res) => {
+app.post("/newguide", uploads.single("bilde"), async (req, res) => {
     const { title, tag, overskrift, beskrivelse, bilde } = req.body;
+
+    console.log(req.body, "GUIDE")
     
     // Create a new guide
     const newGuide = new Guide({
@@ -100,14 +127,18 @@ app.post("/newguide", async (req, res) => {
             bilde: req.file ? req.file.filename : "", // If there's an image, store the filename
         }],
     });
-    
-    try {
+
+    if(title !== undefined) {
+
+      
+      try {
         await newGuide.save();
         console.log(`New guide created: ${title}`);
         res.redirect("/guide"); // Redirect to guide page after saving
-    } catch (error) {
+      } catch (error) {
         console.error("Error creating guide:", error);
         res.status(500).send("Internal Server Error");
+      }
     }
 });
 
