@@ -1,26 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Brukestøtte</title>
-        <link rel="shortcut icon" href="/favicon.png" type="image/x-icon">
-        <link rel="stylesheet" href="/css/main.css">
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brukestøtte</title>
+    <link rel="shortcut icon" href="/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="/css/main.css">
+</head>
 <body>
     <nav>
         <a href="/">Logo</a>
         <a href="/guide">Guide</a>
         <a href="/login">Logg inn</a>
     </nav>
-    <h1>Log inn</h1>
-        <form action="" method="post">
-            <h2>Email</h2>
-            <input type="email" placeholder="Enter Email" name="email" id="email">
-            <h2>Password</h2>
-            <input type="password" placeholder="Enter Password" name="password" id="password">
-            <input type="submit" class="log inn">Log inn</input>
-        </form>
-    <a href="/signinn">Signinn</a>
+
+    <h2>Logg inn</h2>
+
+    <!-- Display error message if it exists -->
+    <% if (typeof error !== 'undefined') { %>
+        <div style="color: red;"><%= error %></div>
+    <% } %>
+
+    <form action="/login" method="post">
+        <h2>Email</h2>
+        <input type="email" placeholder="Skriv inn e-post" name="email" id="email" required>
+        <h2>Passord</h2>
+        <input type="password" placeholder="Skriv inn passord" name="password" id="password" required>
+        <input type="submit" value="Logg inn">
+    </form>
+    <a href="/signinn">Sign inn</a>
 </body>
 </html>

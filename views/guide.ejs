@@ -1,43 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Brukestøtte</title>
-        <link rel="shortcut icon" href="/favicon.png" type="image/x-icon">
-        <link rel="stylesheet" href="/css/main.css">
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
 <body>
     <div class="gridcontainer">
-        <div class="aside"> 
-            <a class="fontsize1" href="/">Logo</a>
-            <a class="fontsize1" href="/guide">Guide</a>
-            <a class="fontsize1" href="/login">Logg inn</a>
-            <li class="fontsize2" ><a href="#githubpush/pull">Github push/pull</a></li>
-            <li class="fontsize2" ><a href="#githubclone">Github clone</a></li>
-            <li class="fontsize2" ><a href="#githubfirstcommit">Github first commit</a></li>
-            <li class="fontsize2" ><a href="#virtualmachinesetupubuntu">Virtual machine setup ubuntu</a></li>
-            <li class="fontsize2" ><a href="#vminloging">Vm inloging</a></li>
-            <li class="fontsize2" ><a href="#vmapacheinstall">Vm apache install</a></li>
-        </div>
+        <aside class="aside">
+            <a href="/">Logo</a>
+            <a href="/guide">Guide</a>
+            <a href="/login">Logg inn</a>
+            <ul>
+                <% guides.forEach(guide => { %>
+                    <li><a href="#<%= guide.tag %>"><%= guide.title %></a></li>
+                <% }) %>
+            </ul>
+        </aside>
 
-            <div class="maincontainer">
-                <h1>Guide</h1>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <h2 id="githubpush/pull">Github push/pull</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <h2 id="githubclone">Github clone</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <h2 id="githubfirstcommit">Github first commit</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <h2 id="virtualmachinesetupubuntu">Virtual machine setup ubuntu</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <h2 id="vminloging">Vm inloging</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <h2 id="vmapacheinstall">Vm apache install</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-            </div>
+        <main class="maincontainer">
+            <h1>Guide</h1>
+
+            <% guides.forEach(guide => { %>
+                <section>
+                    <h2 id="<%= guide.tag %>"><%= guide.title %></h2>
+                    <% guide.sections.forEach(section => { %>
+                        <h3><%= section.overskrift %></h3>
+                        <p><%= section.beskrivelse %></p>
+                        <% if (section.bilde) { %>
+                            <img src="/uploads/<%= section.bilde %>" alt="<%= section.overskrift %>" />
+                        <% } %>
+                    <% }) %>
+                </section>
+            <% }) %>
+
+        </main>
     </div>
-       
 </body>
 </html>
