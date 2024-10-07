@@ -64,14 +64,17 @@ nav a:hover {
 
 .gridcontainer {
     display: grid;
-    grid-template-columns: 250px 1fr; /* Fixed width for sidebar */
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-areas: 
+    "aside aside aside main main main main main main main"
+    ;
     min-height: 800px;
 }
 
 .aside {
     display: flex;
     flex-direction: column;
-    background-color: #007bff; /* Consistent sidebar color */
+    background-color: lightslategray; /* Consistent sidebar color */
     padding: 20px;
     text-align: center;
     height: 100%; /* Full height */
@@ -88,8 +91,8 @@ nav a:hover {
 }
 
 .maincontainer {
-    margin-left: 20px; /* Adjusted margin for main content */
-    padding: 20px; /* Added padding */
+    margin-left: 0px; /* Adjusted margin for main content */
+    padding: 20px 100% 5px 20px; /* Added padding */
     background-color: #ffffff; /* White background for content area */
     border-radius: 5px; /* Rounded corners */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Added shadow */
@@ -122,6 +125,9 @@ form button {
 
 form button:hover {
     background-color: rgba(255, 255, 255, 0.2); /* Light hover effect */
+}
+section {
+    margin-top: 20px;
 }
 
 @media (max-width: 768px) {
