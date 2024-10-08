@@ -13,8 +13,8 @@
             <a href="/guide">Guide</a>
             <a href="/login">Logg inn</a>
             <ul>
-                <% guides.forEach(guide => { %>
-                    <li><a href="#<%= guide.tag %>"><%= guide.title %></a></li>
+                <% guide.sections.forEach(section => { %>
+                    <li><a href="#<%= section.overskrift %>"><%= section.overskrift %></a></li>
                 <% }) %>
             </ul>
         </aside>
@@ -22,7 +22,6 @@
         <main class="maincontainer">
             <h1>Guide</h1>
 
-            <% guides.forEach(guide => { %>
                 <section>
                     <h2 id="<%= guide.tag %>"><%= guide.title %></h2>
                     <% guide.sections.forEach(section => { %>
@@ -33,9 +32,9 @@
                         <% } %>
                     <% }) %>
                 </section>
-            <% }) %>
 
         </main>
     </div>
 </body>
 </html>
+

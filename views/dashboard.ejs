@@ -1,18 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Brukestøtte</title>
-        <link rel="shortcut icon" href="/favicon.png" type="image/x-icon">
-        <link rel="stylesheet" href="/css/main.css">
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brukestøtte</title>
+    <link rel="shortcut icon" href="/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="/css/main.css">
+</head>
 <body>
     <nav>
         <a href="/">Logo</a>
         <a href="/guide">Guide</a>
         <a href="/login">Logg inn</a>
     </nav>
+
+    <h1>Dine Guider</h1>
+
+    <ul>
+        <% if (guides.length > 0) { %>
+            <% guides.forEach(guide => { %>
+                <li><%= guide.title %> - <a  href="/guide/<%= guide._id %>" id=<%= guide._id%>>Vis</a></li>
+            <% }) %>
+        <% } else { %>
+            <p>Du har ingen guider.</p>
+        <% } %>
+    </ul>
+
     <a href="/newguide">Lag en ny guide</a>
 </body>
 </html>

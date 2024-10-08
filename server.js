@@ -1,50 +1,46 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt"); // For password hashing
+const bcrypt = require("bcrypt");
 const multer = require("multer");
 const path = require("path");
+const jwt = require("jsonwebtoken");  // Legger til JWT for autentisering
+const cookieParser = require("cookie-parser");  // For å håndtere cookies
 const app = express();
+
+const JWT_SECRET = "your_secret_key";  // Velg en sterk hemmelig nøkkel
 
 // Set the view engine to EJS
 app.set("view engine", "ejs");
 
 // Serve static files from the "public" directory
 app.use(express.static("public"));
+app.use('/uploads', express.static('uploads'));  // Serve the uploads folder as static
 
-// Parse JSON and URL-encoded data
+// Parse JSON, URL-encoded data og cookies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use(cookieParser());
 
 const diskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
       cb(null, "./uploads")
   },
   filename: function (req, file, cb) {
-      console.log(file);
       const ext = path.extname(file.originalname);
-      console.log("EXT", ext);
-      // if(ext !== ".png" || ext !== ".jpg") {
-      //     return cb(new Error("Only PNG FILES allowed, stay away Martin!"))
-      // } 
-      const fileName = file.originalname + ".png"
-      cb(null, fileName)
+      const fileName = file.originalname + ".png";
+      cb(null, fileName);
   }
+});
 
-})
 const uploads = multer({
   storage: diskStorage,
+});
 
-})
-
-
-// Connect to MongoDB database
 mongoose.connect("mongodb://127.0.0.1:27017/brukerguide", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 });
 
-// Define MongoDB schema for users
 const userSchema = new mongoose.Schema({
     email: String,
     password: String,
@@ -52,7 +48,6 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 
-// Define MongoDB schema for guides
 const guideSchema = new mongoose.Schema({
     title: String,
     tag: String,
@@ -60,124 +55,130 @@ const guideSchema = new mongoose.Schema({
         {
             overskrift: String,
             beskrivelse: String,
-            bilde: String, // Filepath for image
+            bilde: String,
         },
     ],
+    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },  // Legg til forfatter
 });
 
 const Guide = mongoose.model("Guide", guideSchema);
 
-// Routing for the home page
+// Middleware for checking JWT
+function isAuthenticated(req, res, next) {
+    const token = req.cookies.token;
+    if (!token) {
+        return res.redirect("/login");
+    }
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded;  // Legg brukerdata fra token i request-objektet
+        next();
+    } catch (error) {
+        return res.redirect("/login");
+    }
+}
+
 app.get("/", (req, res) => {
     res.render("index");
 });
 
-// Routing for the login page
 app.get("/login", (req, res) => {
     res.render("innlogging");
 });
 
-// Routing for the guide page
 app.get("/guide", async (req, res) => {
-    const guides = await Guide.find(); // Fetch all guides from the database
-
-    console.log(guides)
+    const guides = await Guide.find(); 
     res.render("guide", { guides });
 });
 
-// Handle login form submission
+
+app.get("/guide/:id", async (req, res) => {
+
+    const id = req.params.id;
+    const guide = await Guide.findById(id); 
+    console.log(guide);
+    res.render("guide", { guide });
+});
+
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
-    console.log(`Login attempted by ${email}`);
 
     try {
-        // Validate user
         const user = await User.findOne({ email: email });
         if (user && await bcrypt.compare(password, user.password)) {
-            console.log(`User ${email} logged in successfully.`);
-            res.redirect("/dashboard");  // Redirect to dashboard after successful login
+            const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: "1h" });
+            res.cookie("token", token, { httpOnly: true });  // Sett token som cookie
+            res.redirect("/dashboard");
         } else {
-            console.log(`Invalid login attempt for ${email}.`);
-            res.render("innlogging", { error: "Invalid email or password." });  // Render the login page with an error
+            res.render("innlogging", { error: "Invalid email or password." });
         }
     } catch (error) {
-        console.error("Error during login:", error);
         res.status(500).send("Internal Server Error");
     }
 });
 
-// Routing for creating a new guide
-app.get("/newguide", (req, res) => {
+app.get("/newguide", isAuthenticated, (req, res) => {  // Beskyttet rute
     res.render("newguide");
 });
 
-// Handle form submission for new guide
-app.post("/newguide", uploads.single("bilde"), async (req, res) => {
-    const { title, tag, overskrift, beskrivelse, bilde } = req.body;
+app.post("/newguide", uploads.single("bilde"), isAuthenticated, async (req, res) => {
+    const { title, tag, overskrift, beskrivelse } = req.body;
 
-    console.log(req.body, "GUIDE")
-    
-    // Create a new guide
     const newGuide = new Guide({
         title,
         tag,
         sections: [{
             overskrift,
             beskrivelse,
-            bilde: req.file ? req.file.filename : "", // If there's an image, store the filename
+            bilde: req.file ? req.file.filename : "",
         }],
+        author: req.user.id  // Lagre brukerens ID som forfatter
     });
 
-    if(title !== undefined) {
-
-      
-      try {
+    try {
         await newGuide.save();
-        console.log(`New guide created: ${title}`);
-        res.redirect("/guide"); // Redirect to guide page after saving
-      } catch (error) {
-        console.error("Error creating guide:", error);
+        res.redirect("/guide");
+    } catch (error) {
         res.status(500).send("Internal Server Error");
-      }
     }
 });
 
-// Routing for the registration page
 app.get("/signinn", (req, res) => {
     res.render("signinn");
 });
 
-// Handle POST request for registration
 app.post("/signinn", async (req, res) => {
     const { email, password, password2 } = req.body;
     
-    // Check if passwords match
     if (password !== password2) {
         return res.render("signinn", { error: "Passwords do not match." });
     }
 
     try {
-        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
-        
-        // Save new user with hashed password
         const newUser = new User({ email, password: hashedPassword });
         await newUser.save();
-        
-        console.log(`New user registered: ${email}`);
-        res.redirect("/dashboard");  // Redirect to dashboard after registration
+        res.redirect("/dashboard");
     } catch (error) {
-        console.error("Error registering user:", error);
         res.status(500).send("Internal Server Error");
     }
 });
 
-// Routing for the dashboard page
-app.get("/dashboard", (req, res) => {
-    res.render("dashboard");
+app.get("/dashboard", isAuthenticated, async (req, res) => {  // Beskyttet rute
+    try {
+        const userGuides = await Guide.find({ author: req.user.id });  // Hent guider laget av brukeren
+        res.render("dashboard", { guides: userGuides });
+    } catch (error) {
+        res.status(500).send("Internal Server Error");
+    }
 });
 
-// Listen on port 3000
+app.get("/logout", (req, res) => {
+    res.clearCookie("token");  // Fjern JWT-token
+    res.redirect("/login");
+});
+
 app.listen(3000, () => {
     console.log("Server running on port 3000");
 });
