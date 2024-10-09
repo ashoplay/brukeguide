@@ -3,11 +3,11 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const multer = require("multer");
 const path = require("path");
-const jwt = require("jsonwebtoken");  // Legger til JWT for autentisering
-const cookieParser = require("cookie-parser");  // For å håndtere cookies
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 const app = express();
 
-const JWT_SECRET = "your_secret_key";  // Velg en sterk hemmelig nøkkel
+const JWT_SECRET = "your_secret_key"; // Velg en sterk hemmelig nøkkel
 
 // Set the view engine to EJS
 app.set("view engine", "ejs");
@@ -36,10 +36,7 @@ const uploads = multer({
   storage: diskStorage,
 });
 
-mongoose.connect("mongodb://127.0.0.1:27017/brukerguide", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-});
+mongoose.connect("mongodb://127.0.0.1:27017/brukerguide");
 
 const userSchema = new mongoose.Schema({
     email: String,
@@ -72,33 +69,26 @@ function isAuthenticated(req, res, next) {
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded;  // Legg brukerdata fra token i request-objektet
+        req.user = decoded;
         next();
     } catch (error) {
         return res.redirect("/login");
     }
 }
 
-app.get("/", (req, res) => {
-    res.render("index");
+// Hent guider til forsiden
+app.get("/", async (req, res) => {
+    try {
+        const guides = await Guide.find();
+        res.render("index", { guides });
+    } catch (error) {
+        res.status(500).send("Internal Server Error");
+    }
 });
 
+// Logg inn ruter
 app.get("/login", (req, res) => {
     res.render("innlogging");
-});
-
-app.get("/guide", async (req, res) => {
-    const guides = await Guide.find(); 
-    res.render("guide", { guides });
-});
-
-
-app.get("/guide/:id", async (req, res) => {
-
-    const id = req.params.id;
-    const guide = await Guide.findById(id); 
-    console.log(guide);
-    res.render("guide", { guide });
 });
 
 app.post("/login", async (req, res) => {
@@ -108,7 +98,7 @@ app.post("/login", async (req, res) => {
         const user = await User.findOne({ email: email });
         if (user && await bcrypt.compare(password, user.password)) {
             const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: "1h" });
-            res.cookie("token", token, { httpOnly: true });  // Sett token som cookie
+            res.cookie("token", token, { httpOnly: true });
             res.redirect("/dashboard");
         } else {
             res.render("innlogging", { error: "Invalid email or password." });
@@ -118,64 +108,133 @@ app.post("/login", async (req, res) => {
     }
 });
 
-app.get("/newguide", isAuthenticated, (req, res) => {  // Beskyttet rute
+// Lag ny guide
+app.get("/newguide", isAuthenticated, (req, res) => {
     res.render("newguide");
 });
 
-app.post("/newguide", uploads.single("bilde"), isAuthenticated, async (req, res) => {
+app.post("/newguide", uploads.array("bilde"), isAuthenticated, async (req, res) => {
     const { title, tag, overskrift, beskrivelse } = req.body;
+    const sectionsarray = [];
+
+    if (Array.isArray(overskrift)) {
+        for (let index = 0; index < overskrift.length; index++) {
+            sectionsarray.push({
+                overskrift: overskrift[index],
+                beskrivelse: beskrivelse[index],
+                bilde: req.files[index] ? req.files[index].path : ""
+            });
+        }
+    } else {
+        sectionsarray.push({
+            overskrift,
+            beskrivelse,
+            bilde: req.files[0] ? req.files[0].path : ""
+        });
+    }
 
     const newGuide = new Guide({
         title,
         tag,
-        sections: [{
-            overskrift,
-            beskrivelse,
-            bilde: req.file ? req.file.filename : "",
-        }],
-        author: req.user.id  // Lagre brukerens ID som forfatter
+        sections: sectionsarray,
+        author: req.user.id
     });
 
     try {
         await newGuide.save();
-        res.redirect("/guide");
+        res.redirect(`/guide/${newGuide._id}`);
     } catch (error) {
         res.status(500).send("Internal Server Error");
     }
 });
 
-app.get("/signinn", (req, res) => {
-    res.render("signinn");
-});
-
-app.post("/signinn", async (req, res) => {
-    const { email, password, password2 } = req.body;
-    
-    if (password !== password2) {
-        return res.render("signinn", { error: "Passwords do not match." });
-    }
-
+// Hent guider på dashboard (brukerens egne guider)
+app.get("/dashboard", isAuthenticated, async (req, res) => {
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ email, password: hashedPassword });
-        await newUser.save();
-        res.redirect("/dashboard");
-    } catch (error) {
-        res.status(500).send("Internal Server Error");
-    }
-});
-
-app.get("/dashboard", isAuthenticated, async (req, res) => {  // Beskyttet rute
-    try {
-        const userGuides = await Guide.find({ author: req.user.id });  // Hent guider laget av brukeren
+        const userGuides = await Guide.find({ author: req.user.id });
         res.render("dashboard", { guides: userGuides });
     } catch (error) {
         res.status(500).send("Internal Server Error");
     }
 });
 
+app.get("/guide/:id", async (req, res) => {
+    try {
+        const guide = await Guide.findById(req.params.id);
+        if (!guide) {
+            return res.status(404).send("Guide ikke funnet");
+        }
+        res.render("guide", { guide });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Intern serverfeil");
+    }
+});
+
+// Rediger en guide
+app.get("/guide/:id/edit", isAuthenticated, async (req, res) => {
+    const guide = await Guide.findById(req.params.id);
+    if (!guide || guide.author.toString() !== req.user.id) {
+        return res.status(403).send("Du har ikke tilgang til å redigere denne guiden.");
+    }
+    res.render("editguide", { guide });
+});
+
+app.post("/guide/:id/edit", uploads.array("bilde"), isAuthenticated, async (req, res) => {
+    const guide = await Guide.findById(req.params.id);
+    if (!guide || guide.author.toString() !== req.user.id) {
+        return res.status(403).send("Du har ikke tilgang til å redigere denne guiden.");
+    }
+
+    const { title, tag, overskrift, beskrivelse } = req.body;
+    const sectionsarray = [];
+
+    if (Array.isArray(overskrift)) {
+        for (let index = 0; index < overskrift.length; index++) {
+            sectionsarray.push({
+                overskrift: overskrift[index],
+                beskrivelse: beskrivelse[index],
+                bilde: req.files[index] ? req.files[index].path : guide.sections[index]?.bilde || ""
+            });
+        }
+    } else {
+        sectionsarray.push({
+            overskrift,
+            beskrivelse,
+            bilde: req.files[0] ? req.files[0].path : guide.sections[0]?.bilde || ""
+        });
+    }
+
+    guide.title = title;
+    guide.tag = tag;
+    guide.sections = sectionsarray;
+
+    try {
+        await guide.save();
+        res.redirect(`/guide/${guide._id}`);
+    } catch (error) {
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+// Slett en guide
+app.get("/guide/:id/delete", isAuthenticated, async (req, res) => {
+    const guide = await Guide.findById(req.params.id);
+    if (!guide || guide.author.toString() !== req.user.id) {
+        return res.status(403).send("Du har ikke tilgang til å slette denne guiden.");
+    }
+
+    try {
+        await Guide.findByIdAndDelete(req.params.id);
+        res.redirect("/dashboard");
+    } catch (error) {
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+// Logg ut
 app.get("/logout", (req, res) => {
-    res.clearCookie("token");  // Fjern JWT-token
+    res.clearCookie("token");
     res.redirect("/login");
 });
 

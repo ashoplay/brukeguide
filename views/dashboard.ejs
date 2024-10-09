@@ -19,7 +19,12 @@
     <ul>
         <% if (guides.length > 0) { %>
             <% guides.forEach(guide => { %>
-                <li><%= guide.title %> - <a  href="/guide/<%= guide._id %>" id=<%= guide._id%>>Vis</a></li>
+                <li>
+                    <%= guide.title %> 
+                    - <a href="/guide/<%= guide._id %>" id=<%= guide._id%>>Vis</a>
+                    - <a href="/guide/<%= guide._id %>/edit">Rediger</a>
+                    - <a href="/guide/<%= guide._id %>/delete">Slett</a>
+                </li>
             <% }) %>
         <% } else { %>
             <p>Du har ingen guider.</p>
