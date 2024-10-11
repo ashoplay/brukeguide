@@ -2,66 +2,51 @@ body {
     margin: 0;
     font-family: Arial, sans-serif;
     max-width: 100%;
-    background-color: #e6f2ff; /* Light blue background */
+    background-color: bisque;
 }
 
 nav {
     display: flex;
-    background-color: #007bff; /* Bright blue */
+    background-color: rgb(255, 199, 131);
     justify-content: space-around;
-    padding: 1% 0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 2%;
 }
 
 nav a {
     text-decoration: none;
     font-size: 18px;
-    color: white; /* White text for contrast */
-    padding: 10px 15px;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-}
-
-nav a:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    color: black;
 }
 
 #myInput {
-    background: #ffffff; /* White input background */
-    width: 95%;
+    background-position: 10px 12px;
+    background-repeat: no-repeat;
+    width: 100%;
     font-size: 16px;
     padding: 12px 20px 12px 40px;
     border: 1px solid #ddd;
-    border-radius: 5px;
-    margin: 20px 2.5%;
 }
 
 #myUL {
-    list-style-type: none; /* Remove default bullets */
+    list-style-type: none;
     padding: 0;
-    margin: 20px 0; /* Spacing around the list */
-}
-
-#myUL li {
-    margin: 5px 0; /* Spacing between items */
+    margin: 0;
 }
 
 #myUL li a {
     border: 1px solid #ddd;
-    background-color: #f8f9fa; /* Light gray background for links */
+    margin-top: -1px;
+    background-color: #f6f6f6;
     padding: 12px;
     text-decoration: none;
     font-size: 18px;
     color: black;
     display: block;
-    border-radius: 5px; /* Rounded corners */
-    transition: background-color 0.3s;
 }
 
-#myUL li a:hover {
-    background-color: #d6e8f2; /* Light blue hover effect */
+#myUL li a:hover:not(.header) {
+    background-color: #eee;
 }
-
 .gridcontainer {
     display: grid;
     grid-template-columns: repeat(10, 1fr);
@@ -70,86 +55,57 @@ nav a:hover {
     ;
     min-height: 800px;
 }
-
 .aside {
+    grid-area: aside;
     display: flex;
     flex-direction: column;
-    background-color: lightslategray; /* Consistent sidebar color */
+    list-style-type: none;
+    background-color: rgb(255, 199, 131);
+    position: fixed; 
+    height: 100%;
+    width: 20%; 
     padding: 20px;
     text-align: center;
-    height: 100%; /* Full height */
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Shadow on the right side */
-}
-
-.aside a {
-    color: #ffffff; /* White text for better visibility */
-    margin-bottom: 15px;
-}
-
-.aside a:hover {
-    text-decoration: underline; /* Underline on hover */
 }
 
 .maincontainer {
-    margin-left: 0px; /* Adjusted margin for main content */
-    padding: 20px 100% 5px 20px; /* Added padding */
-    background-color: #ffffff; /* White background for content area */
-    border-radius: 5px; /* Rounded corners */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Added shadow */
+    grid-area: main;
+    margin-left: 3%; 
+    padding-right: 5%;
+}
+.aside li{
+    padding-bottom: 15px;
+}
+.aside a {
+    margin-bottom: 20px;
+    text-decoration: none;
+}
+p {
+    padding-bottom: 5%;
+}
+.textsize1 {
+    font-size: 25px;
 }
 
-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center align form elements */
+.textsize2{
+    font-size: 23px;
 }
-
-form input,
-form textarea {
-    width: 80%; /* Consistent input width */
-    padding: 10px; /* Padding for input elements */
-    margin: 10px 0; /* Spacing between inputs */
-    border: 1px solid #ddd;
-    border-radius: 5px; /* Rounded corners */
-}
-
-form button {
-    background-color: #007bff; /* Consistent button color */
-    color: white; /* White text */
-    border: none; /* No border */
-    padding: 10px 20px; /* Button padding */
-    border-radius: 5px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor on hover */
-    transition: background-color 0.3s; /* Smooth transition */
-}
-
-form button:hover {
-    background-color: rgba(255, 255, 255, 0.2); /* Light hover effect */
-}
-section {
-    margin-top: 20px;
-}
-
 @media (max-width: 768px) {
-    .maincontainer {
-        margin-left: 0; /* Remove left margin on smaller screens */
+    .textsize2 {
+        font-size: 19px;
     }
-
-    nav {
-        flex-direction: column; /* Stack navigation items */
-    }
-
-    .gridcontainer {
-        grid-template-columns: 1fr; /* Stack the sidebar and content */
-    }
-
-    .aside {
-        width: 100%; /* Full width on small screens */
+    .textsize1 {
+        font-size: 21px;
     }
 }
-
 @media (max-width: 480px) {
-    #myInput {
-        width: 90%; /* More width for small screens */
+    .textsize2{
+        font-size: 16px;
+    }
+    .textsize1 {
+        font-size: 18px;
+    }
+    .maincontainer {
+        margin-left: 7%; 
     }
 }

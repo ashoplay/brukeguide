@@ -9,31 +9,30 @@
 <body>
     <div class="gridcontainer">
         <aside class="aside">
-            <a href="/">Logo</a>
-            <a href="/login">Logg inn</a>
-            <ul>
-                <% guide.sections.forEach(section => { %>
-                    <li><a href="#<%= section.overskrift %>"><%= section.overskrift %></a></li>
-                <% }) %>
-            </ul>
+            <div class="sidebar-box">
+                <a href="/">Logo</a>
+                <a href="/login">Logg inn</a>
+                <ul>
+                    <% guide.sections.forEach(section => { %>
+                        <li><a class="section-link" href="#<%= section.overskrift %>"><%= section.overskrift %></a></li>
+                    <% }) %>
+                </ul>
+            </div>
         </aside>
 
         <main class="maincontainer">
             <h1>Guide</h1>
-
-                <section>
-                    <h2 id="<%= guide.tag %>"><%= guide.title %></h2>
-                    <% guide.sections.forEach(section => { %>
-                        <h3><%= section.overskrift %></h3>
-                        <p><%= section.beskrivelse %></p>
-                        <% if (section.bilde) { %>
-                            <img src="/<%= section.bilde %>" alt="<%= section.overskrift %>" />
-                        <% } %>
-                    <% }) %>
-                </section>
-
+            <section>
+                <h2 id="<%= guide.tag %>"><%= guide.title %></h2>
+                <% guide.sections.forEach(section => { %>
+                    <h3><%= section.overskrift %></h3>
+                    <p><%= section.beskrivelse %></p>
+                    <% if (section.bilde) { %>
+                        <img src="/<%= section.bilde %>" alt="<%= section.overskrift %>" />
+                    <% } %>
+                <% }) %>
+            </section>
         </main>
     </div>
 </body>
 </html>
-

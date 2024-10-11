@@ -23,7 +23,7 @@ app.use(cookieParser());
 
 const diskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-      cb(null, "./uploads")
+      cb(null, "./uploads");
   },
   filename: function (req, file, cb) {
       const ext = path.extname(file.originalname);
@@ -38,6 +38,7 @@ const uploads = multer({
 
 mongoose.connect("mongodb://127.0.0.1:27017/brukerguide");
 
+// User schema
 const userSchema = new mongoose.Schema({
     email: String,
     password: String,
@@ -45,6 +46,7 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 
+// Guide schema
 const guideSchema = new mongoose.Schema({
     title: String,
     tag: String,
@@ -91,20 +93,54 @@ app.get("/login", (req, res) => {
     res.render("innlogging");
 });
 
+// Sign in route
+app.get("/signinn", (req, res) => {
+    res.render("signinn");
+});
+
+// Handle user registration
+app.post("/signinn", async (req, res) => {
+    const { email, password, password2 } = req.body;
+
+    // Check if passwords match
+    if (password !== password2) {
+        return res.render("signinn", { error: "Passordene må matche." });
+    }
+
+    try {
+        // Check if the user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.render("signinn", { error: "E-post er allerede registrert." });
+        }
+
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({ email, password: hashedPassword });
+
+        await newUser.save();
+        res.redirect("/login"); // Redirect to login after successful registration
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Intern serverfeil");
+    }
+});
+
+// Handle user login
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const user = await User.findOne({ email: email });
+        const user = await User.findOne({ email });
         if (user && await bcrypt.compare(password, user.password)) {
             const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: "1h" });
             res.cookie("token", token, { httpOnly: true });
             res.redirect("/dashboard");
         } else {
-            res.render("innlogging", { error: "Invalid email or password." });
+            res.render("innlogging", { error: "Ugyldig e-post eller passord." });
         }
     } catch (error) {
-        res.status(500).send("Internal Server Error");
+        res.status(500).send("Intern serverfeil");
     }
 });
 
@@ -213,22 +249,22 @@ app.post("/guide/:id/edit", uploads.array("bilde"), isAuthenticated, async (req,
         await guide.save();
         res.redirect(`/guide/${guide._id}`);
     } catch (error) {
-        res.status(500).send("Internal Server Error");
+        res.status(500).send("Intern serverfeil");
     }
 });
 
 // Slett en guide
-app.get("/guide/:id/delete", isAuthenticated, async (req, res) => {
+app.post("/guide/:id/delete", isAuthenticated, async (req, res) => {
     const guide = await Guide.findById(req.params.id);
     if (!guide || guide.author.toString() !== req.user.id) {
         return res.status(403).send("Du har ikke tilgang til å slette denne guiden.");
     }
 
     try {
-        await Guide.findByIdAndDelete(req.params.id);
+        await guide.remove();
         res.redirect("/dashboard");
     } catch (error) {
-        res.status(500).send("Internal Server Error");
+        res.status(500).send("Intern serverfeil");
     }
 });
 
@@ -238,6 +274,7 @@ app.get("/logout", (req, res) => {
     res.redirect("/login");
 });
 
+// Start serveren
 app.listen(3000, () => {
-    console.log("Server running on port 3000");
+    console.log("Server kjører på http://localhost:3000");
 });
