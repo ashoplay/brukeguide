@@ -128,8 +128,6 @@ app.post("/signinn", async (req, res) => {
 
 // Handle user login
 app.post("/login", async (req, res) => {
-    res.clearCookie("token");
-    res.redirect("/login");
     const { email, password } = req.body;
 
     try {
