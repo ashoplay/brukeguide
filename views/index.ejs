@@ -8,10 +8,8 @@
     <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
-    <nav>
-        <a href="/">Logo</a>
-        <a href="/login">Logg inn</a>
-    </nav>
+    <%- include('_nav', { user: user }) %>
+
 
     <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Søk..." style="padding: 10px; margin: 20px 0; border: 1px solid #ccc; border-radius: 5px; width: calc(100% - 22px);">
 
@@ -26,9 +24,3 @@
     <script src="/javascript/main.js"></script> 
 </body>
 </html>
-
-<!-- det jeg mangler
- fix logout
- lag styling og fix guide.ejs
- forkjellig knapper/menyer om du er logget in 
- -->

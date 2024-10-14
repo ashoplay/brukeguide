@@ -8,11 +8,7 @@
     <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
-    <nav>
-        <a href="/">Logo</a>
-        <a href="/login">Logg inn</a>
-        <a href="/logout">Log out</a>
-    </nav>
+    <%- include('_nav', { user: user }) %>
 
     <h2>Logg inn</h2>
 

@@ -11,7 +11,14 @@
         <aside class="aside">
             <div class="sidebar-box">
                 <a href="/">Logo</a>
-                <a href="/login">Logg inn</a>
+    <% if (!user) { %>
+        <a href="/login">Logg inn</a>
+        <a href="/signinn">Registrer deg</a>
+    <% } else { %>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/newguide">Ny Guide</a>
+        <a href="/logout">Logg ut</a>
+    <% } %>
                 <ul>
                     <% guide.sections.forEach(section => { %>
                         <li><a class="section-link" href="#<%= section.overskrift %>"><%= section.overskrift %></a></li>

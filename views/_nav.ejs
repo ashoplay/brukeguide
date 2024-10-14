@@ -1,0 +1,11 @@
+<nav>
+    <a href="/">Logo</a>
+    <% if (!user) { %>
+        <a href="/login">Logg inn</a>
+        <a href="/signinn">Registrer deg</a>
+    <% } else { %>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/newguide">Ny Guide</a>
+        <a href="/logout">Logg ut</a>
+    <% } %>
+</nav>

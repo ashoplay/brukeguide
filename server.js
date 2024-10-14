@@ -7,46 +7,44 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const app = express();
 
-const JWT_SECRET = "your_secret_key"; // Velg en sterk hemmelig nøkkel
+const JWT_SECRET = "your_secret_key"; // Change this to a strong, secure key
 
 // Set the view engine to EJS
 app.set("view engine", "ejs");
 
-// Serve static files from the "public" directory
+// Serve static files
 app.use(express.static("public"));
-app.use('/uploads', express.static('uploads'));  // Serve the uploads folder as static
+app.use('/uploads', express.static('uploads'));  // Serve uploaded files
 
-// Parse JSON, URL-encoded data og cookies
+// Middleware for parsing requests and cookies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Configure Multer for file uploads
 const diskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
       cb(null, "./uploads");
   },
   filename: function (req, file, cb) {
       const ext = path.extname(file.originalname);
-      const fileName = file.originalname + ".png";
+      const fileName = file.originalname + ".png"; // Use .png extension
       cb(null, fileName);
   }
 });
+const uploads = multer({ storage: diskStorage });
 
-const uploads = multer({
-  storage: diskStorage,
-});
-
+// Connect to MongoDB
 mongoose.connect("mongodb://127.0.0.1:27017/brukerguide");
 
-// User schema
+// User schema and model
 const userSchema = new mongoose.Schema({
     email: String,
     password: String,
 });
-
 const User = mongoose.model("User", userSchema);
 
-// Guide schema
+// Guide schema and model
 const guideSchema = new mongoose.Schema({
     title: String,
     tag: String,
@@ -57,28 +55,27 @@ const guideSchema = new mongoose.Schema({
             bilde: String,
         },
     ],
-    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },  // Legg til forfatter
+    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },  // Reference to user (author)
 });
-
 const Guide = mongoose.model("Guide", guideSchema);
 
-// Middleware for checking JWT
-function isAuthenticated(req, res, next) {
+// Middleware for checking JWT and attaching user to views
+app.use((req, res, next) => {
     const token = req.cookies.token;
-    if (!token) {
-        return res.redirect("/login");
+    if (token) {
+        try {
+            const decoded = jwt.verify(token, JWT_SECRET);
+            res.locals.user = decoded;  // Attach user info to res.locals
+        } catch (err) {
+            res.locals.user = null;  // Invalid token
+        }
+    } else {
+        res.locals.user = null;  // No token present
     }
+    next();
+});
 
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded;
-        next();
-    } catch (error) {
-        return res.redirect("/login");
-    }
-}
-
-// Hent guider til forsiden
+// Homepage with guides
 app.get("/", async (req, res) => {
     try {
         const guides = await Guide.find();
@@ -88,12 +85,12 @@ app.get("/", async (req, res) => {
     }
 });
 
-// Logg inn ruter
+// Login route
 app.get("/login", (req, res) => {
     res.render("innlogging");
 });
 
-// Sign in route
+// Register (sign up) route
 app.get("/signinn", (req, res) => {
     res.render("signinn");
 });
@@ -101,27 +98,22 @@ app.get("/signinn", (req, res) => {
 // Handle user registration
 app.post("/signinn", async (req, res) => {
     const { email, password, password2 } = req.body;
-    console.log(email, "EMAIL")
-    // Check if passwords match
+
     if (password !== password2) {
         return res.render("signinn", { error: "Passordene må matche." });
     }
 
     try {
-        // Check if the user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.render("signinn", { error: "E-post er allerede registrert." });
         }
 
-        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = new User({ email, password: hashedPassword });
-        console.log(newUser, "NEWUSER")
         await newUser.save();
-        res.redirect("/login"); // Redirect to login after successful registration
+        res.redirect("/login");
     } catch (error) {
-        console.error(error);
         res.status(500).send("Intern serverfeil");
     }
 });
@@ -129,11 +121,10 @@ app.post("/signinn", async (req, res) => {
 // Handle user login
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
-    console.log(email, "EMAIL", password, "PASSWORD")
+
     try {
         const user = await User.findOne({ email });
         if (user && await bcrypt.compare(password, user.password)) {
-            console.log("PASSWORD MATCHES CRYPT")
             const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: "1h" });
             res.cookie("token", token, { httpOnly: true });
             res.redirect("/dashboard");
@@ -145,7 +136,13 @@ app.post("/login", async (req, res) => {
     }
 });
 
-// Lag ny guide
+// Logout route
+app.get("/logout", (req, res) => {
+    res.clearCookie("token");
+    res.redirect("/");
+});
+
+// Create new guide
 app.get("/newguide", isAuthenticated, (req, res) => {
     res.render("newguide");
 });
@@ -185,7 +182,7 @@ app.post("/newguide", uploads.array("bilde"), isAuthenticated, async (req, res) 
     }
 });
 
-// Hent guider på dashboard (brukerens egne guider)
+// User dashboard
 app.get("/dashboard", isAuthenticated, async (req, res) => {
     try {
         const userGuides = await Guide.find({ author: req.user.id });
@@ -195,6 +192,7 @@ app.get("/dashboard", isAuthenticated, async (req, res) => {
     }
 });
 
+// View a specific guide
 app.get("/guide/:id", async (req, res) => {
     try {
         const guide = await Guide.findById(req.params.id);
@@ -203,12 +201,11 @@ app.get("/guide/:id", async (req, res) => {
         }
         res.render("guide", { guide });
     } catch (error) {
-        console.log(error);
         res.status(500).send("Intern serverfeil");
     }
 });
 
-// Rediger en guide
+// Edit a guide
 app.get("/guide/:id/edit", isAuthenticated, async (req, res) => {
     const guide = await Guide.findById(req.params.id);
     if (!guide || guide.author.toString() !== req.user.id) {
@@ -254,22 +251,39 @@ app.post("/guide/:id/edit", uploads.array("bilde"), isAuthenticated, async (req,
     }
 });
 
-// Slett en guide
+// Delete a guide
 app.post("/guide/:id/delete", isAuthenticated, async (req, res) => {
-    const guide = await Guide.findById(req.params.id);
-    if (!guide || guide.author.toString() !== req.user.id) {
-        return res.status(403).send("Du har ikke tilgang til å slette denne guiden.");
-    }
-
     try {
-        await guide.remove();
+        const guide = await Guide.findById(req.params.id);
+        if (!guide) {
+            return res.status(404).send("Guide ikke funnet.");
+        }
+        if (guide.author.toString() !== req.user.id) {
+            return res.status(403).send("Du har ikke tilgang til å slette denne guiden.");
+        }
+        await guide.deleteOne();  
         res.redirect("/dashboard");
     } catch (error) {
         res.status(500).send("Intern serverfeil");
     }
 });
 
-// Start serveren
+// Middleware for checking authentication
+function isAuthenticated(req, res, next) {
+    if (!req.cookies.token) {
+        return res.redirect("/login");
+    }
+
+    try {
+        const decoded = jwt.verify(req.cookies.token, JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch (error) {
+        return res.redirect("/login");
+    }
+}
+
+// Start the server
 app.listen(3000, () => {
     console.log("Server kjører på http://localhost:3000");
 });

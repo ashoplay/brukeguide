@@ -8,10 +8,7 @@
     <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
-    <nav>
-        <a href="/">Logo</a>
-        <a href="/login">Logg inn</a>
-    </nav>
+    <%- include('_nav', { user: user }) %>
     <h1>Lag en ny guide</h1>
     
     <form action="" method="post" id="formcontainer" enctype="multipart/form-data">
