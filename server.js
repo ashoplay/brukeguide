@@ -128,6 +128,8 @@ app.post("/signinn", async (req, res) => {
 
 // Handle user login
 app.post("/login", async (req, res) => {
+    res.clearCookie("token");
+    res.redirect("/login");
     const { email, password } = req.body;
 
     try {
@@ -266,12 +268,6 @@ app.post("/guide/:id/delete", isAuthenticated, async (req, res) => {
     } catch (error) {
         res.status(500).send("Intern serverfeil");
     }
-});
-
-// Logg ut
-app.get("/logout", (req, res) => {
-    res.clearCookie("token");
-    res.redirect("/login");
 });
 
 // Start serveren
