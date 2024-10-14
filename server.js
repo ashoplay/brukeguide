@@ -101,7 +101,7 @@ app.get("/signinn", (req, res) => {
 // Handle user registration
 app.post("/signinn", async (req, res) => {
     const { email, password, password2 } = req.body;
-
+    console.log(email, "EMAIL")
     // Check if passwords match
     if (password !== password2) {
         return res.render("signinn", { error: "Passordene må matche." });
@@ -117,7 +117,7 @@ app.post("/signinn", async (req, res) => {
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = new User({ email, password: hashedPassword });
-
+        console.log(newUser, "NEWUSER")
         await newUser.save();
         res.redirect("/login"); // Redirect to login after successful registration
     } catch (error) {
@@ -129,10 +129,11 @@ app.post("/signinn", async (req, res) => {
 // Handle user login
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
-
+    console.log(email, "EMAIL", password, "PASSWORD")
     try {
         const user = await User.findOne({ email });
         if (user && await bcrypt.compare(password, user.password)) {
+            console.log("PASSWORD MATCHES CRYPT")
             const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: "1h" });
             res.cookie("token", token, { httpOnly: true });
             res.redirect("/dashboard");
