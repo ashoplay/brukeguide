@@ -32,6 +32,11 @@ nav a {
     border: 1px solid #ddd;
 }
 
+section {
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
 #myUL {
     list-style-type: none;
     padding: 0;
