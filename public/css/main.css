@@ -103,6 +103,12 @@ ul {
     .textsize1 {
         font-size: 21px;
     }
+    .gridcontainer {
+        grid-template-columns: repeat(9, 1fr);
+        grid-template-areas: 
+        "aside aside main main main main main main main"
+        ;
+    }
 }
 @media (max-width: 480px) {
     .textsize2{
