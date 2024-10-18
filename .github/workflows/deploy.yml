@@ -24,7 +24,7 @@ jobs:
 
      - name: install dependencies
        working-directory:  ./
-       run: npm install
+       run: run: cd /var/www/brukerguide && npm install
 
      - name: reload with pm2
        run: |
