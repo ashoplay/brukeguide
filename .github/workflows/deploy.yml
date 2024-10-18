@@ -16,7 +16,7 @@ jobs:
 
      - name: pull latest changes
        run: |
-        cd /var/www/brukerguide 
+        cd /var/www/brukeguide 
         git pull --no-edit origin main
 
      - name: verify pull
@@ -31,7 +31,7 @@ jobs:
 
      - name: install dependencies
        working-directory:  ./
-       run: cd /var/www/brukerguide && npm install
+       run: cd /var/www/brukeguide && npm install
 
      - name: reload with pm2
        run: |
