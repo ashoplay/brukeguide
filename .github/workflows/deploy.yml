@@ -16,12 +16,12 @@ jobs:
 
      - name: pull latest changes
        run: |
-        cd /var/www/brukeguide 
+        cd /var/www/brukerguide 
         git pull --no-edit origin main
 
      - name: verify pull
        run: |
-        cd /var/www/brukeguide 
+        cd /var/www/brukerguide 
         git log -1 --oneline
 
      - name: set up node js
@@ -31,7 +31,7 @@ jobs:
 
      - name: install dependencies
        working-directory:  ./
-       run: cd /var/www/brukeguide && npm install
+       run: cd /var/www/brukerguide && npm install
 
      - name: reload with pm2
        run: |
