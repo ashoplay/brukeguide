@@ -1,0 +1,42 @@
+name: Deploy Brukeguide to VM
+
+om: 
+  push:
+    branches:
+      - main
+
+jobs: 
+  deploy:
+    name: Deploy to self-hosted runner
+    runs-on: self-hosted
+
+
+    steps:
+     - name: checkout code
+       uses: actions/checkout@v3
+
+     - name: pull latest charges
+       run: git pull --no-edit origin main
+
+     - name: set up node js
+       uses: actions/setup-node@v3
+       with:
+          node-versions: "20"
+
+
+     - name: install dependecies
+       working-directory:  ./
+       run: npm install
+
+     - name: reload with pm2
+       run: |
+        echo "reloading server"
+        pm2 reload server --update-env
+
+     - name: verify PM2 status
+       run: |
+        pm2 status
+        if pm2 list | grep -qE "errored|stopped"; then
+          echo "one or more precesses have erorred or stopped"
+          exit 1 
+        fi
